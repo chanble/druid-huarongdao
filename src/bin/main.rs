@@ -4,19 +4,19 @@ use druid::{
     WindowDesc,
 };
 
-use crate::app::App;
-use crate::square::Square;
+use druid_huarongdao::app::{AppState, build_hrd};
 
 fn main() {
-    
-    let window = WindowDesc::new(|| Square { })
+    let app = AppState::new(3);
+    let data = app.get_hrd().clone();
+    let window = WindowDesc::new(move || build_hrd(data))
         .window_size((223., 300.))
-        .resizable(false)
+        .resizable(true)
         .title(
             LocalizedString::new("calc-demo-window-title").with_placeholder("Simple Calculator"),
         );
 
     AppLauncher::with_window(window)
-        .launch(8usize)
+        .launch(app)
         .expect("launch failed");
 }
