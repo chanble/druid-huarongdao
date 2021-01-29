@@ -4,12 +4,14 @@ use druid::{
     WindowDesc,
 };
 
-use druid_huarongdao::app::{AppState, build_hrd};
+use druid_huarongdao::app::{AppState, build_hrd, AppWidget};
+
+use num_huarongdao::num_hrd::NumHrd;
 
 fn main() {
-    let app = AppState::new(3);
-    let data = app.get_hrd().clone();
-    let window = WindowDesc::new(move || build_hrd(data))
+    let hrd = NumHrd::new(3);
+    let app_state = AppState::new(hrd.as_2d_vec());
+    let window = WindowDesc::new(|| AppWidget::new(app_state.clone()))
         .window_size((223., 300.))
         .resizable(true)
         .title(
@@ -17,6 +19,7 @@ fn main() {
         );
 
     AppLauncher::with_window(window)
-        .launch(app)
+        .use_simple_logger()
+        .launch(app_state)
         .expect("launch failed");
 }

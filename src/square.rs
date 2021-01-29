@@ -1,58 +1,76 @@
 
+use druid::widget::{Label, Painter, CrossAxisAlignment};
 use druid::{
-    theme, Color, Data, Lens, LocalizedString, RenderContext, WidgetExt,
-    PaintCtx, Env,
+    Widget, WidgetPod, EventCtx, Event, Env, theme, Color, Data, PaintCtx,
+    Size, LifeCycleCtx, LifeCycle, UpdateCtx, LayoutCtx, BoxConstraints,
+    RenderContext, WidgetExt
 };
 
-use druid::widget::prelude::*;
-use druid::widget::{Widget, Label, Painter, BackgroundBrush};
+#[derive(Debug, Clone, Data)]
+pub(crate) struct SquareState {
+    digit: usize,
+}
 
-pub struct Square;
+impl SquareState {
+    pub fn new(d: usize) -> Self {
+        SquareState {
+            digit: d,
+        }
+    }
+    pub fn into_string(&self) -> String {
+        format!("{}", self.digit)
+    }
+}
 
-impl Widget<usize> for Square {
-    fn event(&mut self, _ctx: &mut EventCtx, _event: &Event, _data: &mut usize, _env: &Env) {}
+pub struct Square {
+    label: Label<String>,
+}
 
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle, _data: &usize, _env: &Env) {
+impl Square {
+    pub fn new(state: SquareState) -> Self {
+        let label_string = state.into_string();
+        Self {
+            label: Self::from_usize(label_string),
+        }
     }
 
-    fn update(&mut self, _ctx: &mut UpdateCtx, _old_data: &usize, _data: &usize, _env: &Env) {}
+    fn from_usize(text: String) -> Label<String> {
+
+        let mut label = Label::new(text)
+            .with_text_size(24.);
+        label
+    }
+}
+
+impl Widget<SquareState> for Square {
+
+    fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut SquareState, _env: &Env) {
+
+    }
+
+    fn lifecycle(
+        &mut self,
+        _ctx: &mut LifeCycleCtx,
+        _event: &LifeCycle,
+        _data: &SquareState,
+        _env: &Env,
+    ) {
+    }
+
+    fn update(&mut self, ctx: &mut UpdateCtx, old_data: &SquareState, data: &SquareState, _env: &Env) {
+    }
 
     fn layout(
         &mut self,
-        _ctx: &mut LayoutCtx,
+        ctx: &mut LayoutCtx,
         bc: &BoxConstraints,
-        _data: &usize,
-        _env: &Env,
+        data: &SquareState,
+        env: &Env,
     ) -> Size {
-        bc.constrain((50.0, 50.0))
+        self.label.layout(ctx, bc, &data.into_string(), env)
     }
 
-    fn paint(&mut self, ctx: &mut PaintCtx, data: &usize, env: &Env) {
-        let mut background = if ctx.is_hot() {
-            BackgroundBrush::Color(Color::rgb8(200, 55, 55))
-        } else {
-            BackgroundBrush::Color(Color::rgb8(30, 210, 170))
-        };
-        background.paint(ctx, data, env);
-
-        let painter = Painter::new(|ctx, _, env| {
-            let bounds = ctx.size().to_rect();
-    
-            ctx.fill(bounds, &env.get(theme::BACKGROUND_LIGHT));
-    
-            if ctx.is_hot() {
-                ctx.stroke(bounds.inset(-0.5), &Color::WHITE, 1.0);
-            }
-    
-            if ctx.is_active() {
-                ctx.fill(bounds, &Color::rgb8(0x71, 0x71, 0x71));
-            }
-        });
-
-        Label::new(format!("{}", data))
-            .with_text_size(24.)
-            .center()
-            .background(painter)
-            .expand();
+    fn paint(&mut self, ctx: &mut PaintCtx, data: &SquareState, env: &Env) {
+        self.label.paint(ctx, &data.into_string(), env);
     }
 }
