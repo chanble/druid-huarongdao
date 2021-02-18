@@ -4,14 +4,23 @@ use druid::{
     WindowDesc,
 };
 
-use druid_huarongdao::app::{AppState, build_hrd, AppWidget};
+use druid_huarongdao::app::{self, AppState};
 
 use num_huarongdao::num_hrd::NumHrd;
 
 fn main() {
-    let hrd = NumHrd::new(3);
-    let app_state = AppState::new(hrd.as_2d_vec());
-    let window = WindowDesc::new(|| AppWidget::new(app_state.clone()))
+    let hrd = NumHrd::new(&1);
+    let mut hrd_data1: Vec<Vec<usize>> = Vec::new();
+    let mut hrd_data_row: Vec<usize> = Vec::new();
+    hrd_data_row.push(0);
+    hrd_data_row.push(1);
+    hrd_data_row.push(2);
+    hrd_data1.push(hrd_data_row);
+    let app_state = AppState {
+        hrd_data: hrd_data1,
+        state: format!("ddd"),
+    };
+    let window = WindowDesc::new(app::build_app)
         .window_size((223., 300.))
         .resizable(true)
         .title(

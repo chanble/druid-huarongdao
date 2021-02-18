@@ -4,14 +4,14 @@ use druid::{
     WindowDesc, Size
 };
 use druid::widget::prelude::*;
-use druid::widget::{Label, Painter, BackgroundBrush, Flex};
+use druid::widget::{Label, Painter, BackgroundBrush, Flex, CrossAxisAlignment};
 
 use num_huarongdao::num_hrd::NumHrd;
-use crate::row::{Row, RowState};
 
 #[derive(Clone, Lens)]
 pub struct AppState {
-    hrd_data: Vec<Vec<usize>>,
+    pub hrd_data: Vec<Vec<usize>>,
+    pub state: String,
 }
 
 impl Data for AppState {
@@ -20,89 +20,79 @@ impl Data for AppState {
     }
 }
 
-impl AppState {
-    pub fn new(hrd: NumHrd) -> Self {
-        Self {
-            hrd_data: hrd.as_2d_vec(),
-        }
-    }
-
-    pub fn click(&mut self, n: usize) {
-        
-    }
-
-    pub fn row(&self, index: u8) -> RowState {
-        let mut row: Vec<usize> = Vec::new();
-        row.extend_from_slice(&self.hrd_data[index as usize]);
-        RowState::new(row)
-    }
-
-    pub fn get_hrd_data(&self) -> &Vec<Vec<usize>> {
-        &self.hrd_data
-    }
+pub fn build_app() -> impl Widget<AppState> {
+    let display = Label::new(|data: &String, _env: &_| data.clone())
+        .with_text_size(32.0)
+        .lens(AppState::state)
+        .padding(5.0);
+    Flex::column()
+        .with_flex_spacer(0.2)
+        .with_child(display)
+        .with_flex_spacer(0.2)
+        .cross_axis_alignment(CrossAxisAlignment::End)
+        .with_flex_child(
+            flex_row(
+                vec!(
+                    Box::new(digit_button(7)),
+                    Box::new(digit_button(8)),
+                    Box::new(digit_button(9)),
+                )
+            ),
+            1.0,
+        )
+        .with_spacer(1.0)
+        .with_flex_child(
+            flex_row(
+                vec!(
+                    Box::new(digit_button(4)),
+                    Box::new(digit_button(5)),
+                    Box::new(digit_button(6)),
+                )
+            ),
+            1.0,
+        )
+        .with_spacer(1.0)
+        .with_flex_child(
+            flex_row(
+                vec!(
+                    Box::new(digit_button(1)),
+                    Box::new(digit_button(2)),
+                    Box::new(digit_button(3)),
+                )
+            ),
+            1.0,
+        )
 }
 
-pub struct AppWidget {
-    rows: Vec<Row>,
+fn flex_row<T: Data>(
+    vw: Vec<Box<dyn Widget<T>>>
+) -> impl Widget<T> {
+    let mut flex = Flex::row();
+    for x in vw {
+        flex = flex.with_flex_child(x, 1.0).with_spacer(1.0);
+    }
+    flex
 }
 
-impl AppWidget {
-    pub fn new(data: AppState) -> Self {
-        let mut rows: Vec<Row> = Vec::new();
-        for row in data.get_hrd_data() {
-            let row = Row::new(RowState::new(row.clone()));
-            rows.push(row);
+
+fn digit_button(digit: u8) -> impl Widget<AppState> {
+    let painter = Painter::new(|ctx, _, env| {
+        let bounds = ctx.size().to_rect();
+
+        ctx.fill(bounds, &env.get(theme::BACKGROUND_LIGHT));
+
+        if ctx.is_hot() {
+            ctx.stroke(bounds.inset(-0.5), &Color::WHITE, 1.0);
         }
-        Self {
-            rows,
+
+        if ctx.is_active() {
+            ctx.fill(bounds, &Color::rgb8(0x71, 0x71, 0x71));
         }
-    }
-}
+    });
 
-impl Widget<AppState> for AppWidget {
-
-    fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut AppState, _env: &Env) {
-        
-    }
-
-    fn lifecycle(
-        &mut self,
-        _ctx: &mut LifeCycleCtx,
-        _event: &LifeCycle,
-        _data: &AppState,
-        _env: &Env,
-    ) {
-    }
-
-    fn update(&mut self, ctx: &mut UpdateCtx, old_data: &AppState, data: &AppState, _env: &Env) {
-
-        if data.hrd_data != old_data.hrd_data {
-            ctx.request_paint();
-        }
-    }
-
-    fn layout(
-        &mut self,
-        ctx: &mut LayoutCtx,
-        bc: &BoxConstraints,
-        data: &AppState,
-        env: &Env,
-    ) -> Size {
-        if self.rows.len() < 1 {
-            return bc.max();
-        }
-        let row_size = self.rows[0].layout(ctx, bc, &data.row(0), env);
-        bc.constrain(Size {
-            width: row_size.width,
-            height: row_size.height * self.rows.len() as f64,
-        })
-    }
-
-    fn paint(&mut self, ctx: &mut PaintCtx, data: &AppState, env: &Env) {
-        let mut index = 0;
-        for row in &mut self.rows {
-            row.paint(ctx, &data.row(index), env);
-            index += 1;
-        }
-    }
+    Label::new(format!("{}", digit))
+        .with_text_size(24.)
+        .center()
+        .background(painter)
+        .expand()
 }
