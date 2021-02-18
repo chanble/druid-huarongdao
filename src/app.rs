@@ -25,43 +25,33 @@ pub fn build_app() -> impl Widget<AppState> {
         .with_text_size(32.0)
         .lens(AppState::state)
         .padding(5.0);
-    Flex::column()
+    let mut flex = Flex::column()
         .with_flex_spacer(0.2)
         .with_child(display)
         .with_flex_spacer(0.2)
-        .cross_axis_alignment(CrossAxisAlignment::End)
-        .with_flex_child(
-            flex_row(
-                vec!(
-                    Box::new(digit_button(7)),
-                    Box::new(digit_button(8)),
-                    Box::new(digit_button(9)),
-                )
-            ),
-            1.0,
-        )
-        .with_spacer(1.0)
-        .with_flex_child(
-            flex_row(
-                vec!(
-                    Box::new(digit_button(4)),
-                    Box::new(digit_button(5)),
-                    Box::new(digit_button(6)),
-                )
-            ),
-            1.0,
-        )
-        .with_spacer(1.0)
-        .with_flex_child(
-            flex_row(
-                vec!(
-                    Box::new(digit_button(1)),
-                    Box::new(digit_button(2)),
-                    Box::new(digit_button(3)),
-                )
-            ),
-            1.0,
-        )
+        .cross_axis_alignment(CrossAxisAlignment::End);
+
+    flex = flex_vec(flex, vec!(
+        vec!(0, 1, 2,),
+        vec!(3, 4, 5,),
+        vec!(6, 7, 8,),
+    ));
+    flex
+}
+
+fn flex_vec(mut flex: Flex<AppState>, v: Vec<Vec<usize>>) -> Flex<AppState> {
+
+    for r in v {
+        let mut flex_row_data: Vec<Box<dyn Widget<AppState>>> = Vec::new();
+        for c in r {
+            flex_row_data.push(Box::new(digit_button(c)));
+        }
+        flex.add_flex_child(
+                flex_row(flex_row_data), 1.0,
+            );
+        flex.add_spacer(1.0);
+    }
+    flex
 }
 
 fn flex_row<T: Data>(
@@ -75,7 +65,7 @@ fn flex_row<T: Data>(
 }
 
 
-fn digit_button(digit: u8) -> impl Widget<AppState> {
+fn digit_button(digit: usize) -> impl Widget<AppState> {
     let painter = Painter::new(|ctx, _, env| {
         let bounds = ctx.size().to_rect();
 
