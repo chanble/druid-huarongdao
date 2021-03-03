@@ -68,7 +68,6 @@ fn make_widget() -> impl Widget<AppData> {
                     data.hrd_data.zero_move(&direction).unwrap();
                 }
                 println!("shuffle over");
-                data.incr_step();
                 data.state = State::Ready;
                 if data.state == State::Ready {
                     data.start();

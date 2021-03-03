@@ -64,6 +64,7 @@ impl AppData {
 
     pub fn incr_step(&mut self) {
         let d_usize = self.steps.parse::<usize>().unwrap();
+        println!("d usize: {}", d_usize);
         self.steps = format!("{}", d_usize + 1);
     }
 
@@ -106,20 +107,24 @@ impl Widget<AppData> for HuarongDaoWidget {
             }
             Event::MouseUp(e) => {
                 if e.button == MouseButton::Left {
-                    let pos = e.pos;
-                    println!("MouseUp pos: {}", pos);
-                    if let Some(grid_pos) = self.grid_pos(e.pos, *data.hrd_data.size()) {
-                        println!("grid pos: {:?}", grid_pos);
-                        data.hrd_data.move_num_by_point(grid_pos);
-                    }
-                    if data.hrd_data.is_win() {
-                        data.set_win();
+                    if data.state == State::Running {
+                        let pos = e.pos;
+                        println!("MouseUp pos: {}", pos);
+                        if let Some(grid_pos) = self.grid_pos(e.pos, *data.hrd_data.size()) {
+                            println!("grid pos: {:?}", grid_pos);
+                            if data.hrd_data.move_num_by_point(grid_pos) {
+                                data.incr_step();
+                            }
+                        }
+                        if data.hrd_data.is_win() {
+                            data.set_win();
+                        }
                     }
                 }
             },
             Event::Timer(id) => {
                 // println!("event timer id: {:?}, timer_id: {:?}");
-                if *id == self.timer_id && data.state == State::Running{
+                if *id == self.timer_id && data.state == State::Running {
                     data.incr_duration();
                     self.timer_id = ctx.request_timer(TIMER_INTERVAL);
                 }
@@ -152,7 +157,6 @@ impl Widget<AppData> for HuarongDaoWidget {
             ctx.request_paint();
         }
 
-        println!("data.state: {:?}", data.state);
         if data.state == State::Running {
             self.timer_id = ctx.request_timer(TIMER_INTERVAL);
         }
