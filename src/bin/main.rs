@@ -3,15 +3,14 @@ use druid::{
     theme, AppLauncher, Color, Data, Lens, LocalizedString, RenderContext, Widget, WidgetExt,
     WindowDesc, Size, TimerToken,
 };
-use druid::widget::{Button, Flex, Label, Slider};
+use druid::widget::{Button, Flex, Label, FlexParams, CrossAxisAlignment};
 use rand::prelude::*;
-use std::time::{SystemTime, UNIX_EPOCH};
 use druid_huarongdao::app::{self, AppData, HuarongDaoWidget, State};
 
 use num_huarongdao::num_hrd::{NumHrd, Direction};
 
 fn main() {
-    let hrd = NumHrd::new(&3);
+    let hrd = NumHrd::new(&4);
     let app_state = AppData::new(hrd);
     let window = WindowDesc::new(make_widget)
         .window_size((223., 300.))
@@ -52,10 +51,11 @@ fn make_widget() -> impl Widget<AppData> {
                     height: 0.0,
                 },
             },
-            1.0,
+            2.0,
         )
         .with_child(
-            Button::new("开始游戏").on_click(|_ctx, data: &mut AppData, _env| {
+            Button::new("开始游戏")
+            .padding(15.0).on_click(|_ctx, data: &mut AppData, _env| {
                 for i in 0..500 {
                     let mut rng = rand::thread_rng();
                     let r = rng.gen_range(0..4);
@@ -77,9 +77,9 @@ fn make_widget() -> impl Widget<AppData> {
         )
         .with_child(
             Label::new(|data: &String, _env: &_| data.clone())
-                .with_text_size(48.0)
+                .with_text_size(24.0)
                 .with_text_color(Color::rgb8(0xf0, 0xf0, 0xea))
-                .padding(5.0)
+                .padding(3.0)
                 .lens(AppData::tip)
         )
 }

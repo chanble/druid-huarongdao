@@ -170,7 +170,12 @@ impl Widget<AppData> for HuarongDaoWidget {
         _data: &AppData,
         _env: &Env,
     ) -> Size {
-        bc.max()
+        let max_size = bc.max();
+        let min_side = max_size.height.min(max_size.width);
+        Size {
+            width: min_side,
+            height: min_side,
+        }
     }
 
     
@@ -192,13 +197,12 @@ impl Widget<AppData> for HuarongDaoWidget {
                 };
                 let rect = Rect::from_origin_size(point, self.cell_size);
                 let border = Rect::from_origin_size(point, self.cell_size);
-                
                 ctx.stroke(border, &Color::rgb8(0, 0, 0), 5.0);
                 ctx.fill(rect, &Color::rgb8(0x71, 0x71, 0x71));
                 let txt_num_n = txt_num.get_n();
                 if txt_num_n > 0 {
                     let rect_center = rect.center();
-                    let font_size = 48.0;
+                    let font_size = self.cell_size.width * 0.6;
                     let half_font_size = font_size / 2.0;
                     let text = ctx.text();
                     let layout = text
