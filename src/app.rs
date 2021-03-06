@@ -118,6 +118,7 @@ impl Widget<AppData> for HuarongDaoWidget {
                         }
                         if data.hrd_data.is_win() {
                             data.set_win();
+                            self.timer_id = TimerToken::INVALID;
                         }
                     }
                 }
