@@ -1,11 +1,12 @@
 use std::time::Duration;
+use rand::prelude::*;
 use druid::{
-    theme, AppLauncher, Color, Data, Lens, LocalizedString, RenderContext, Widget, WidgetExt,
-    WindowDesc, Size, Point, Rect, MouseButton, TimerToken,
+    Color, Data, Lens, RenderContext, Widget, WidgetExt,
+    Size, Point, Rect, MouseButton, TimerToken,
 };
-use druid::piet::{FontFamily, ImageFormat, InterpolationMode, Text, TextLayoutBuilder};
+use druid::piet::{FontFamily, Text, TextLayoutBuilder};
 use druid::widget::prelude::*;
-use druid::widget::{Label, Painter, BackgroundBrush, Flex, CrossAxisAlignment};
+use druid::widget::{Label, Flex, Button};
 
 use num_huarongdao::num_hrd::{NumHrd, Direction};
 
@@ -103,7 +104,6 @@ impl Widget<AppData> for HuarongDaoWidget {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut AppData, _env: &Env) {
         match event {
             Event::WindowConnected => {
-                // Start the timer when the application launches
             }
             Event::MouseUp(e) => {
                 if e.button == MouseButton::Left {
@@ -123,18 +123,16 @@ impl Widget<AppData> for HuarongDaoWidget {
                 }
             },
             Event::Timer(id) => {
-                // println!("event timer id: {:?}, timer_id: {:?}");
+                // println!("event timer id: {:?}, timer_id: {:?}", *id, self.timer_id);
                 if *id == self.timer_id && data.state == State::Running {
                     data.incr_duration();
                     self.timer_id = ctx.request_timer(TIMER_INTERVAL);
                 }
             },
-            Event::MouseDown(e) => {
-                let pos = e.pos;
+            Event::MouseDown(_e) => {
                 // println!("MouseDown pos: {}", pos);
-
             },
-            Event::MouseMove(e) => {
+            Event::MouseMove(_e) => {
                 // 
             },
             _ => {}
@@ -151,14 +149,13 @@ impl Widget<AppData> for HuarongDaoWidget {
     ) {
     }
 
-    
     fn update(&mut self, ctx: &mut UpdateCtx, old_data: &AppData, data: &AppData, _env: &Env) {
+
+        if data.state == State::Running && self.timer_id == TimerToken::INVALID {
+            self.timer_id = ctx.request_timer(TIMER_INTERVAL);
+        }
         if !data.same(old_data) {
             ctx.request_paint();
-        }
-
-        if data.state == State::Running {
-            self.timer_id = ctx.request_timer(TIMER_INTERVAL);
         }
     }
 
@@ -216,4 +213,68 @@ impl Widget<AppData> for HuarongDaoWidget {
             }
         }
     }
+}
+
+fn start_game(_ctx: &mut EventCtx, data: &mut AppData, _env: &Env) {
+
+    let for_end: usize = *data.hrd_data.size() as usize * 100usize;
+
+    for _ in 0..for_end {
+        let mut rng = rand::thread_rng();
+        let r = rng.gen_range(0..4);
+        let direction = match r {
+            0 => Direction::Top,
+            1 => Direction::Bottom,
+            2 => Direction::Left,
+            _ => Direction::Right,
+        };
+        data.hrd_data.zero_move(&direction).unwrap();
+    }
+    println!("shuffle over");
+    data.state = State::Ready;
+    if data.state == State::Ready {
+        data.start();
+    }
+    _ctx.request_paint();
+}
+
+pub fn make_widget() -> impl Widget<AppData> {
+
+    Flex::column()
+        .with_flex_child(
+            Label::new("数字华容道")
+                .with_text_size(52.0)
+                .padding(5.0),
+            1.0,
+        )
+        .with_child(
+            Flex::row()
+            .with_child(Label::new("用时："))
+            .with_child(Label::new(|data: &String, _env: &_| data.clone()).lens(AppData::duration))
+            .with_child(Label::new("秒"))
+            .with_child(Label::new("步数："))
+            .with_child(Label::new(|data: &String, _env: &_| data.clone()).lens(AppData::steps))
+            
+        )
+        .with_flex_child(
+            HuarongDaoWidget {
+                timer_id: TimerToken::INVALID,
+                cell_size: Size {
+                    width: 0.0,
+                    height: 0.0,
+                },
+            },
+            2.0,
+        )
+        .with_child(
+            Button::new("开始游戏")
+            .padding(15.0).on_click(start_game),
+        )
+        .with_child(
+            Label::new(|data: &String, _env: &_| data.clone())
+                .with_text_size(24.0)
+                .with_text_color(Color::rgb8(0xf0, 0xf0, 0xea))
+                .padding(3.0)
+                .lens(AppData::tip)
+        )
 }
