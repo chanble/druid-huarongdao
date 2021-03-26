@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 druid = "~0.7.0"
-num-huarongdao = { path = "../num-huarongdao" }
+num-huarongdao = "1.0.1"
 rand = "~0.8"

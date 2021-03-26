@@ -821,6 +821,8 @@ checksum = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525"
 [[package]]
 name = "num-huarongdao"
 version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8637defd9e5def449e16eed643163ce1cc6aa2a2d3bc1391dcb4e913ff71ea97"
 
 [[package]]
 name = "objc"
